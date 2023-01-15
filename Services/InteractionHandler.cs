@@ -14,11 +14,10 @@ namespace MerpBot.Services
         public static IConfigurationRoot _config;
         public static InteractionService _interactions;
 
-        public InteractionHandler(IServiceProvider provider, DiscordSocketClient discord, InteractionService interactions, IConfigurationRoot config)
+        public InteractionHandler(IServiceProvider provider, DiscordSocketClient discord, InteractionService interactions)
         {
             _provider = provider;
             _discord = discord;
-            _config = config;
             _interactions = interactions;
 
             _discord.InteractionCreated += OnInteractionCreated;
@@ -68,11 +67,12 @@ namespace MerpBot.Services
             {
                 Console.WriteLine(DateTime.Now.ToString("HH:mm:ss:ffff") + " (In OnInteractionCreated)");
 
+                await interaction.DeferAsync();
+
                 SocketInteractionContext context = new SocketInteractionContext(_discord, interaction);
                 try
                 {
                     // Create an execution context that matches the generic type parameter of your InteractionModuleBase<T> modules
-                    await interaction.DeferAsync();
                     await _interactions.ExecuteCommandAsync(context, _provider);
                 }
                 catch (Exception e)
