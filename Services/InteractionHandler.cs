@@ -30,60 +30,68 @@ namespace MerpBot.Services
             await _interactions.AddModulesAsync(System.Reflection.Assembly.GetEntryAssembly(), _provider);
         }
 
-        private async Task OnSlashCommandExecuted(SlashCommandInfo command, IInteractionContext context, IResult result)
+        private Task OnSlashCommandExecuted(SlashCommandInfo command, IInteractionContext context, IResult result)
         {
-            //exceptions
-            if (result.Error == InteractionCommandError.Exception)
+            _ = Task.Run(async () =>
             {
+                //exceptions
                 if (result.Error == InteractionCommandError.Exception)
                 {
-                    if (context.Interaction.HasResponded)
-                        await context.Channel.SendMessageAsync("There was an internal error, please check the logs");
+                    if (result.Error == InteractionCommandError.Exception)
+                    {
+                        if (context.Interaction.HasResponded)
+                            await context.Channel.SendMessageAsync("There was an internal error, please check the logs");
+                        else
+                            await context.Interaction.FollowupAsync("There was an internal error, please check the logs");
+
+                        var infoChannel = (IMessageChannel)_discord.GetChannel(GlobalIDs.errorChannel);
+                        await infoChannel.SendMessageAsync(
+                            $"There was an error in {context.Guild.Name} in <#{context.Channel.Id}>\n" +
+                            $"error: {result.ErrorReason}");
+                    }
+                }
+                //general errors
+                else if (result.Error != null)
+                {
+                    if (result.Error == InteractionCommandError.UnmetPrecondition)
+                        await context.Interaction.FollowupAsync(result.ErrorReason, ephemeral: true);
                     else
-                        await context.Interaction.FollowupAsync("There was an internal error, please check the logs");
+                        await context.Interaction.FollowupAsync(result.ErrorReason, ephemeral: true);
+                }
+            });
+            return Task.CompletedTask;
+        }
+
+        private Task OnInteractionCreated(SocketInteraction interaction)
+        {
+            _ = Task.Run(async () =>
+            {
+                Console.WriteLine(DateTime.Now.ToString("HH:mm:ss:ffff") + " (In OnInteractionCreated)");
+
+                SocketInteractionContext context = new SocketInteractionContext(_discord, interaction);
+                try
+                {
+                    // Create an execution context that matches the generic type parameter of your InteractionModuleBase<T> modules
+                    await interaction.DeferAsync();
+                    await _interactions.ExecuteCommandAsync(context, _provider);
+                }
+                catch (Exception e)
+                {
+                    Helpers.ConsoleWithTimeStamp("[Interaction error] " + e.Message);
 
                     var infoChannel = (IMessageChannel)_discord.GetChannel(GlobalIDs.errorChannel);
                     await infoChannel.SendMessageAsync(
                         $"There was an error in {context.Guild.Name} in <#{context.Channel.Id}>\n" +
-                        $"error: {result.ErrorReason}");
+                        $"created at: {context.Interaction.CreatedAt.ToString("HH:mm:ss")} \n" +
+                        $"error: {e.Message}");
+
+                    // If a Slash Command execution fails it is most likely that the original interaction acknowledgement will persist. It is a good idea to delete the original
+                    // response, or at least let the user know that something went wrong during the command execution.
+                    if (interaction.Type == InteractionType.ApplicationCommand)
+                        await interaction.GetOriginalResponseAsync().ContinueWith(async (msg) => await msg.Result.DeleteAsync());
                 }
-            }
-            //general errors
-            else if (result.Error != null)
-            {
-                if (result.Error == InteractionCommandError.UnmetPrecondition)
-                    await context.Interaction.FollowupAsync(result.ErrorReason, ephemeral: true);
-                else
-                    await context.Interaction.FollowupAsync(result.ErrorReason, ephemeral: true);
-            }
-        }
-
-        private async Task OnInteractionCreated(SocketInteraction interaction)
-        {
-            Console.WriteLine(DateTime.Now.ToString("HH:mm:ss:ffff") + " (In OnInteractionCreated)");
-
-            SocketInteractionContext context = new SocketInteractionContext(_discord, interaction);
-            try
-            {
-                // Create an execution context that matches the generic type parameter of your InteractionModuleBase<T> modules   
-                await interaction.DeferAsync();
-                await _interactions.ExecuteCommandAsync(context, _provider);
-            }
-            catch (Exception e)
-            {
-                Helpers.ConsoleWithTimeStamp("[Interaction error] " + e.Message);
-
-                var infoChannel = (IMessageChannel)_discord.GetChannel(GlobalIDs.errorChannel);
-                await infoChannel.SendMessageAsync(
-                    $"There was an error in {context.Guild.Name} in <#{context.Channel.Id}>\n" +
-                    $"created at: {context.Interaction.CreatedAt.ToString("HH:mm:ss")} \n" +
-                    $"error: {e.Message}");
-
-                // If a Slash Command execution fails it is most likely that the original interaction acknowledgement will persist. It is a good idea to delete the original
-                // response, or at least let the user know that something went wrong during the command execution.
-                if (interaction.Type == InteractionType.ApplicationCommand)
-                    await interaction.GetOriginalResponseAsync().ContinueWith(async (msg) => await msg.Result.DeleteAsync());
-            }
+            });
+            return Task.CompletedTask;
         }
     }
 }

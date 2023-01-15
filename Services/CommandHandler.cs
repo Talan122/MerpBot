@@ -36,14 +36,13 @@ namespace MerpBot.Services
             //_commands.CommandExecuted += OnCommandExecuted;
         }
 
-        private Task Onready()
+        private async Task Onready()
         {
 
             Helpers.ConsoleWithTimeStamp($"Connected as {_discord.CurrentUser.Username}#{_discord.CurrentUser.Discriminator}");
-            _discord.SetGameAsync("merp merp merp merp merp merp merp merp merp", type: ActivityType.Listening);
+            await _discord.SetGameAsync("merp merp merp merp merp merp merp merp merp", type: ActivityType.Listening);
             // InteractionHandler._interactions.RegisterCommandsToGuildAsync(851204839605927946);
             // Only uncomment if you're having issues with /register!
-            return Task.CompletedTask;
         }
 
         private Task Log(LogMessage arg)

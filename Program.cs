@@ -14,7 +14,7 @@ namespace MerpBot
 {
     class BasicData
     {
-        public static string AppVersion = "1.3.1";
+        public static string AppVersion = "1.3.2";
     }
 
     class Program
