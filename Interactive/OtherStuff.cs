@@ -51,13 +51,6 @@ public class OtherStuff
         return Result;
     }
 
-    public static bool IsHighUser(SocketGuildUser user)
-    {
-        if (user.Roles.Any(r => r.Id == 937175477657944074)) return true;
-        else if (SuperUser.SuperUsers.Contains(user.Id)) return true;
-        else return false;
-    }
-
     public static string Reverse(string s)
     {
         char[] charArray = s.ToCharArray();

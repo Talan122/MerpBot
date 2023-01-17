@@ -8,7 +8,6 @@ using MerpBot.Services;
 using MerpBot.Interactive.Preconditions;
 using System.IO;
 using System.Diagnostics;
-using MerpBot.Interactive.Modals;
 using MerpBot.Interactive.Options;
 using Newtonsoft.Json;
 using MerpBot.Destiny;
