@@ -12,161 +12,159 @@ using Microsoft.Extensions.Configuration;
 using System.Text.RegularExpressions;
 using Microsoft.VisualBasic;
 
-namespace MerpBot.Services
+namespace MerpBot.Services;
+public class CommandHandler
 {
-    public class CommandHandler
+    public static IServiceProvider _provider;
+    public static DiscordSocketClient _discord;
+    public static CommandService _commands;
+    public static IConfiguration _config;
+
+    public CommandHandler(IServiceProvider provider, DiscordSocketClient discord, CommandService commands, IConfigurationRoot config)
     {
-        public static IServiceProvider _provider;
-        public static DiscordSocketClient _discord;
-        public static CommandService _commands;
-        public static IConfiguration _config;
+        _provider = provider;
+        _discord = discord;
+        _commands = commands;
+        _config = config;
 
-        public CommandHandler(IServiceProvider provider, DiscordSocketClient discord, CommandService commands, IConfigurationRoot config)
+        Helpers.SetClient(discord);
+
+        _discord.Ready += Onready;
+        _discord.Log += Log;
+        //_discord.MessageReceived += OnMessageReceived;
+        //_commands.CommandExecuted += OnCommandExecuted;
+    }
+
+    private async Task Onready()
+    {
+
+        Helpers.ConsoleWithTimeStamp($"Connected as {_discord.CurrentUser.Username}#{_discord.CurrentUser.Discriminator}");
+        await _discord.SetGameAsync("merp merp merp merp merp merp merp merp merp", type: ActivityType.Listening);
+        // InteractionHandler._interactions.RegisterCommandsToGuildAsync(851204839605927946);
+        // Only uncomment if you're having issues with /register!
+    }
+
+    private Task Log(LogMessage arg)
+    {
+        Console.WriteLine(arg.ToString());
+        return Task.CompletedTask;
+    }
+
+    private async Task OnCommandExecuted(Optional<CommandInfo> info, ICommandContext context, IResult result)
+    {
+        //exceptions
+        if(result.Error == CommandError.Exception)
         {
-            _provider = provider;
-            _discord = discord;
-            _commands = commands;
-            _config = config;
+            await context.Channel.SendMessageAsync("There was an internal error, please check the logs");
 
-            Helpers.SetClient(discord);
-
-            _discord.Ready += Onready;
-            _discord.Log += Log;
-            //_discord.MessageReceived += OnMessageReceived;
-            //_commands.CommandExecuted += OnCommandExecuted;
+            var infoChannel = (IMessageChannel)_discord.GetChannel(GlobalIDs.errorChannel);
+            await infoChannel.SendMessageAsync(
+                $"There was an error in {context.Guild.Name} in <#{context.Channel.Id}>\n" +
+                $"jump link: {context.Message.GetJumpUrl()} \n" +
+                $"error: {result.ErrorReason}");
         }
-
-        private async Task Onready()
+        //general errors
+        else if(result.Error != null)
         {
-
-            Helpers.ConsoleWithTimeStamp($"Connected as {_discord.CurrentUser.Username}#{_discord.CurrentUser.Discriminator}");
-            await _discord.SetGameAsync("merp merp merp merp merp merp merp merp merp", type: ActivityType.Listening);
-            // InteractionHandler._interactions.RegisterCommandsToGuildAsync(851204839605927946);
-            // Only uncomment if you're having issues with /register!
+            if (result.ErrorReason == "Unknown command.")
+                _ = BotPinged((SocketCommandContext)context); //it wasn't a command
+            else if (result.Error == CommandError.UnmetPrecondition)
+                await context.Channel.SendMessageAsync("You may not use this command");
+            else
+                await context.Channel.SendMessageAsync(result.ErrorReason);
         }
+    }
 
-        private Task Log(LogMessage arg)
+    private async Task OnMessageReceived(SocketMessage arg)
+    {
+        if (arg is SocketUserMessage message) //safe cast message to prevent errors for example pin added notifications
         {
-            Console.WriteLine(arg.ToString());
-            return Task.CompletedTask;
-        }
+            if (message.Author.IsBot) return;
 
-        private async Task OnCommandExecuted(Optional<CommandInfo> info, ICommandContext context, IResult result)
-        {
-            //exceptions
-            if(result.Error == CommandError.Exception)
+            SocketCommandContext context = new SocketCommandContext(_discord, message);
+
+            if (context.Channel.GetChannelType() == ChannelType.DM)
             {
-                await context.Channel.SendMessageAsync("There was an internal error, please check the logs");
-
-                var infoChannel = (IMessageChannel)_discord.GetChannel(GlobalIDs.errorChannel);
-                await infoChannel.SendMessageAsync(
-                    $"There was an error in {context.Guild.Name} in <#{context.Channel.Id}>\n" +
-                    $"jump link: {context.Message.GetJumpUrl()} \n" +
-                    $"error: {result.ErrorReason}");
+                //doesn't do anything yet
+                //await DMMessageHandling(message, context);
             }
-            //general errors
-            else if(result.Error != null)
+            else //all other channels (in this case guild text channels really)
             {
-                if (result.ErrorReason == "Unknown command.")
-                    _ = BotPinged((SocketCommandContext)context); //it wasn't a command
-                else if (result.Error == CommandError.UnmetPrecondition)
-                    await context.Channel.SendMessageAsync("You may not use this command");
-                else
-                    await context.Channel.SendMessageAsync(result.ErrorReason);
-            }
-        }
-
-        private async Task OnMessageReceived(SocketMessage arg)
-        {
-            if (arg is SocketUserMessage message) //safe cast message to prevent errors for example pin added notifications
-            {
-                if (message.Author.IsBot) return;
-
-                SocketCommandContext context = new SocketCommandContext(_discord, message);
-
-                if (context.Channel.GetChannelType() == ChannelType.DM)
+                try
                 {
-                    //doesn't do anything yet
-                    //await DMMessageHandling(message, context);
-                }
-                else //all other channels (in this case guild text channels really)
-                {
+                    //command handling
+                    if (message.Content.Contains($"<@{_discord.CurrentUser.Id}>") || message.Content.Contains($"<@{_discord.CurrentUser.Id}>"))
+                    {
+                        await BotPinged(context);
+                    }
+
                     try
                     {
-                        //command handling
-                        if (message.Content.Contains($"<@{_discord.CurrentUser.Id}>") || message.Content.Contains($"<@{_discord.CurrentUser.Id}>"))
-                        {
-                            await BotPinged(context);
-                        }
-
-                        try
-                        {
-                            await AtSomeone(message);
-                        }
-                        catch (Exception e) { };
+                        await AtSomeone(message);
                     }
-                    catch (Exception e)
-                    {
-                        await context.Channel.SendMessageAsync("I wasn't able to process whatever you typed");
-
-                        var infoChannel = (IMessageChannel)_discord.GetChannel(GlobalIDs.errorChannel);
-                        await infoChannel.SendMessageAsync(
-                            $"There was an error in {context.Guild.Name} in <#{context.Channel.Id}>\n" +
-                            $"jump link: {context.Message.GetJumpUrl()} \n" +
-                            $"error: {e}");
-                        Console.WriteLine(e.ToString());
-                    }
+                    catch (Exception e) { };
                 }
-            }
-        }
-
-        private async Task DMMessageHandling(SocketUserMessage message, SocketCommandContext context)
-        {
-            throw new NotImplementedException();
-        }
-
-        private async Task AtSomeone(SocketUserMessage message)
-        {
-            if (!Settings.GetSettingValue("AtSomeone")) return;
-
-            if (message.MentionedRoles.First().Name.ToLower() == "someone" || message.Content.Contains("@someone"))
-            {
-                IUser[] users = (await AsyncEnumerableExtensions.FlattenAsync<IUser>(message.Channel.GetUsersAsync())).ToArray<IUser>();
-                Random random = new Random();
-
-                IUser randomUser = users[random.Next(users.Length)];
-
-                while (randomUser.IsBot)
+                catch (Exception e)
                 {
-                    randomUser = users[random.Next(users.Length)];
-                }
+                    await context.Channel.SendMessageAsync("I wasn't able to process whatever you typed");
 
-                await message.Channel.SendMessageAsync($"<@{randomUser.Id}>");
+                    var infoChannel = (IMessageChannel)_discord.GetChannel(GlobalIDs.errorChannel);
+                    await infoChannel.SendMessageAsync(
+                        $"There was an error in {context.Guild.Name} in <#{context.Channel.Id}>\n" +
+                        $"jump link: {context.Message.GetJumpUrl()} \n" +
+                        $"error: {e}");
+                    Console.WriteLine(e.ToString());
+                }
             }
         }
+    }
 
-        private async Task KyviPinged(SocketUserMessage message)
+    private async Task DMMessageHandling(SocketUserMessage message, SocketCommandContext context)
+    {
+        throw new NotImplementedException();
+    }
+
+    private async Task AtSomeone(SocketUserMessage message)
+    {
+        if (!Settings.GetSettingValue("AtSomeone")) return;
+
+        if (message.MentionedRoles.First().Name.ToLower() == "someone" || message.Content.Contains("@someone"))
         {
-            await message.Channel.SendMessageAsync("Oops. Maybe I'll get it next time.");
+            IUser[] users = (await AsyncEnumerableExtensions.FlattenAsync<IUser>(message.Channel.GetUsersAsync())).ToArray<IUser>();
+            Random random = new Random();
+
+            IUser randomUser = users[random.Next(users.Length)];
+
+            while (randomUser.IsBot)
+            {
+                randomUser = users[random.Next(users.Length)];
+            }
+
+            await message.Channel.SendMessageAsync($"<@{randomUser.Id}>");
         }
+    }
 
-        private async Task BotPinged(SocketCommandContext context)
-        {
-            await context.Channel.SendMessageAsync("https://media.discordapp.net/attachments/482958702211497994/1058221722278572132/caption_16.gif");
-        }
+    private async Task KyviPinged(SocketUserMessage message)
+    {
+        await message.Channel.SendMessageAsync("Oops. Maybe I'll get it next time.");
+    }
 
-        private string GetPingReply(SocketCommandContext context)
-        {
-            var Rand = new Random();
-            int Num = Rand.Next(GlobalIDs.pingReplies.Length);
+    private async Task BotPinged(SocketCommandContext context)
+    {
+        await context.Channel.SendMessageAsync("https://media.discordapp.net/attachments/482958702211497994/1058221722278572132/caption_16.gif");
+    }
+
+    private string GetPingReply(SocketCommandContext context)
+    {
+        var Rand = new Random();
+        int Num = Rand.Next(GlobalIDs.pingReplies.Length);
             
 
-            string unParsed = GlobalIDs.pingReplies[Num];
+        string unParsed = GlobalIDs.pingReplies[Num];
 
-            string parsed = unParsed.Replace("<user>", context.User.Username)
-                .Replace("<userid>", context.User.Id.ToString());
+        string parsed = unParsed.Replace("<user>", context.User.Username)
+            .Replace("<userid>", context.User.Id.ToString());
 
-            return parsed;
-        }
+        return parsed;
     }
 }

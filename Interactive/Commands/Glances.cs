@@ -15,39 +15,38 @@ using MerpBot.Destiny;
 using MerpBot.Destiny.ResponseTypes.User;
 using System.Net.Http;
 
-namespace MerpBot.Interactive.Commands
+namespace MerpBot.Interactive.Commands;
+
+[Group("glances", "Glances commands.")]
+public class Glances : InteractionModuleBase<SocketInteractionContext>
 {
-    [Group("glances", "Glances commands.")]
-    public class Glances : InteractionModuleBase<SocketInteractionContext>
+    private readonly string BaseLink = "http://localhost:61208/api/3/";
+    public HttpClient HttpClient { get; set; }
+
+    [NotYetImplemented]
+    [SlashCommand("test", "Test command for glances")]
+    public async Task Test()
     {
-        private readonly string BaseLink = "http://localhost:61208/api/3/";
-        public HttpClient HttpClient { get; set; }
 
-        [NotYetImplemented]
-        [SlashCommand("test", "Test command for glances")]
-        public async Task Test()
-        {
+        HttpClient.DefaultRequestHeaders.Clear();
 
-            HttpClient.DefaultRequestHeaders.Clear();
+        HttpResponseMessage report = await HttpClient.GetAsync(BaseLink + "status");
 
-            HttpResponseMessage report = await HttpClient.GetAsync(BaseLink + "status");
+        //Console.WriteLine(report);
 
-            //Console.WriteLine(report);
+        await FollowupAsync($"`http://localhost:61208/api/3/status` responded with StatusCode: {((int)report.StatusCode)}, ReasonPhrase: {report.ReasonPhrase}");
+    }
+    [SlashCommand("uptime", "Uptime")]
+    [NotYetImplemented]
+    public async Task Uptime()
+    {
 
-            await FollowupAsync($"`http://localhost:61208/api/3/status` responded with StatusCode: {((int)report.StatusCode)}, ReasonPhrase: {report.ReasonPhrase}");
-        }
-        [SlashCommand("uptime", "Uptime")]
-        [NotYetImplemented]
-        public async Task Uptime()
-        {
+        HttpClient.DefaultRequestHeaders.Clear();
 
-            HttpClient.DefaultRequestHeaders.Clear();
+        string report = await HttpClient.GetStringAsync(BaseLink + "uptime");
 
-            string report = await HttpClient.GetStringAsync(BaseLink + "uptime");
+        //Console.WriteLine(report);
 
-            //Console.WriteLine(report);
-
-            await FollowupAsync($"Uptime: {report.Replace("\"", "")}");
-        }
+        await FollowupAsync($"Uptime: {report.Replace("\"", "")}");
     }
 }
