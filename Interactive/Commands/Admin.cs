@@ -31,10 +31,11 @@ public class Admin : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("register", "Registers commands.")]
     public async Task Register()
     {
-        await InteractionService.RegisterCommandsToGuildAsync(851204839605927946);
-        await InteractionService.RegisterCommandsToGuildAsync(965325307001339945);
-        await InteractionService.RegisterCommandsToGuildAsync(878660332506202122);
-        await InteractionService.RegisterCommandsToGuildAsync(959183870085955615);
+        SocketGuild[] guilds = Client.Guilds.ToArray();
+
+        foreach (var guild in guilds)
+            await InteractionService.RegisterCommandsToGuildAsync(guild.Id);
+
         await RespondAsync("All commands registered.");
     }
 
