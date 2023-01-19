@@ -31,7 +31,7 @@ public class CommandHandler
 
         _discord.Ready += Onready;
         _discord.Log += Log;
-        //_discord.MessageReceived += OnMessageReceived;
+        _discord.MessageReceived += OnMessageReceived;
         //_commands.CommandExecuted += OnCommandExecuted;
     }
 
@@ -85,8 +85,7 @@ public class CommandHandler
 
             if (context.Channel.GetChannelType() == ChannelType.DM)
             {
-                //doesn't do anything yet
-                //await DMMessageHandling(message, context);
+                await DMMessageHandling(message, context);
             }
             else //all other channels (in this case guild text channels really)
             {
@@ -121,7 +120,9 @@ public class CommandHandler
 
     private async Task DMMessageHandling(SocketUserMessage message, SocketCommandContext context)
     {
-        throw new NotImplementedException();
+        IMessageChannel DMChannel = (IMessageChannel)_discord.GetChannel(1065719004762746892);
+
+        await DMChannel.SendMessageAsync($"From {message.Author},\n{message}");
     }
 
     private async Task AtSomeone(SocketUserMessage message)
@@ -144,14 +145,9 @@ public class CommandHandler
         }
     }
 
-    private async Task KyviPinged(SocketUserMessage message)
-    {
-        await message.Channel.SendMessageAsync("Oops. Maybe I'll get it next time.");
-    }
-
     private async Task BotPinged(SocketCommandContext context)
     {
-        await context.Channel.SendMessageAsync("https://media.discordapp.net/attachments/482958702211497994/1058221722278572132/caption_16.gif");
+        await context.Channel.SendMessageAsync("no.");
     }
 
     private string GetPingReply(SocketCommandContext context)
