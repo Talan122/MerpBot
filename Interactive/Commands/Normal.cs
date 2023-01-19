@@ -27,14 +27,14 @@ public class Normal : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("test", "Test command")]
     public async Task Test(string? test = null)
     {
-        await FollowupAsync(test ?? "naw fam");
+        await RespondAsync(test ?? "naw fam");
     }
 
     [SlashCommand("ping", "Pong!")]
     public async Task Ping()
     {
         Console.WriteLine(DateTime.Now.ToString("HH:mm:ss:ffff "));
-        await FollowupAsync($"Pong! ({Client.Latency} ms)");
+        await RespondAsync($"Pong! ({Client.Latency} ms)");
     }
 
     [SlashCommand("ratiohelp", "Get the exact needed depending on the given ratios.")]
@@ -49,7 +49,7 @@ public class Normal : InteractionModuleBase<SocketInteractionContext>
 
         if (needs[0] == ratio) 
         { 
-            await FollowupAsync("Ratio must be in format X:Y", ephemeral: true); 
+            await RespondAsync("Ratio must be in format X:Y", ephemeral: true); 
             return; 
         }
 
@@ -60,19 +60,19 @@ public class Normal : InteractionModuleBase<SocketInteractionContext>
         }
         catch(Exception e)
         {
-            await FollowupAsync($"You made an error inputting the ratio. Did you input numbers or letters?", ephemeral: true);
+            await RespondAsync($"You made an error inputting the ratio. Did you input numbers or letters?", ephemeral: true);
             return;
         }
 
         if(options == RatioOptions.IsOutput)
         {
             double result = (number * int.Parse(needs[0])) / int.Parse(needs[1]);
-            await FollowupAsync($"For an output of {number} with ratio {ratio}, you will need to input {Math.Ceiling(result)} (ceiling) ");
+            await RespondAsync($"For an output of {number} with ratio {ratio}, you will need to input {Math.Ceiling(result)} (ceiling) ");
         }
         else
         {
             double result = (number / int.Parse(needs[0])) * int.Parse(needs[1]);
-            await FollowupAsync($"From an input of {number} with ratio {ratio}, you will get {Math.Floor(result)} (floor)");
+            await RespondAsync($"From an input of {number} with ratio {ratio}, you will get {Math.Floor(result)} (floor)");
         }
     }
 
@@ -104,49 +104,14 @@ public class Normal : InteractionModuleBase<SocketInteractionContext>
         if (from == TempOptions.Kelvin && to == TempOptions.Fahrenheit)
             result = TemperatureConverter.KelvinToFahrenheit(temperature);
 
-        await FollowupAsync($"{result} ° {to}");
-    }
-
-    /*[SlashCommand("cursetest", "Curse test")]
-    public async Task CurseTest()
-    {
-
-        HttpClient.DefaultRequestHeaders.Clear();
-        HttpClient.DefaultRequestHeaders.Add("x-api-key", "$2a$10$qsaMDW6UFMp.IGAk7rvlE.PydrFiCbDYI5GETMvY9nlFxNsJAcLzi");
-
-        string Serialized = await HttpClient.GetStringAsync("https://api.curseforge.com/v1/mods/search?gameId=432");
-
-        JsonObjects.Curseforge.Rootobject? Response = JsonConvert.DeserializeObject<JsonObjects.Curseforge.Rootobject>(Serialized);
-
-        if (Response != null) await FollowupAsync(Response.data.First().authors.First().name);
-
-    }*/
-
-
-    [RequireOwner] 
-    [SlashCommand("say", "Makes the bot say something.")]
-    public async Task Say(string data, ISocketMessageChannel? channel = null, string? messageId = null, bool ping = true)
-    {
-        Console.WriteLine(DateTime.Now.ToString("HH:mm:ss:ffff") + " (In /say)");
-        if (channel == null) channel = Context.Channel;
-
-        if (messageId != null)
-        {
-            var message = (IUserMessage)await channel.GetMessageAsync(ulong.Parse(messageId));
-            await message.ReplyAsync(data, allowedMentions: new AllowedMentions { MentionRepliedUser = ping });
-            await FollowupAsync($"Said \"{data}\" in <#{channel.Id}> in a reply to someone.", ephemeral: true);
-        }
-        else
-        {
-            await channel.SendMessageAsync(data);
-            await FollowupAsync($"Said \"{data}\" in <#{channel.Id}>", ephemeral: true);
-        }
-
+        await RespondAsync($"{result} ° {to}");
     }
 
     [SlashCommand("httppet", "http pets. Default is cat.")]
     public async Task HttpPet(int code, HttpPets pet = HttpPets.Cat)
     {
+        await DeferAsync();
+
         HttpClient.DefaultRequestHeaders.Clear();
 
         string PetType = pet.ToString().ToLower();

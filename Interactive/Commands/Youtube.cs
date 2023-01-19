@@ -30,9 +30,11 @@ public class Youtube : InteractionModuleBase<SocketInteractionContext>
 
         if(!link.Contains("https://www.youtube.com/") && !link.Contains("https://youtu.be/") && !link.Contains("https://youtube.com/"))
         {
-            await FollowupAsync("Not a valid Youtube link. Must be in the format of either `https://www.youtube.com/` or `https://youtu.be/`");
+            await RespondAsync("Not a valid Youtube link. Must be in the format of either `https://www.youtube.com/` or `https://youtu.be/`", ephemeral: true);
             return;
         }
+
+        await DeferAsync();
 
         try
         {

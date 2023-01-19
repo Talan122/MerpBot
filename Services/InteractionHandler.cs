@@ -64,10 +64,6 @@ public class InteractionHandler
     {
         _ = Task.Run(async () =>
         {
-            Console.WriteLine(DateTime.Now.ToString("HH:mm:ss:ffff") + " (In OnInteractionCreated)");
-
-            await interaction.DeferAsync();
-
             SocketInteractionContext context = new SocketInteractionContext(_discord, interaction);
             try
             {

@@ -21,9 +21,11 @@ public class Twitter : InteractionModuleBase<SocketInteractionContext>
 
         if(!link.Contains("https://twitter.com/"))
         {
-            await FollowupAsync("Not a valid twitter link.");
+            await RespondAsync("Not a valid twitter link.", ephemeral: true);
             return;
         }
+
+        await DeferAsync();
 
         string[] buffer = link.Split("/");
         string id = TwitterHelp.UntilChar(buffer.Last(), '?');

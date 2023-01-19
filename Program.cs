@@ -13,7 +13,7 @@ using System.Net.Http;
 namespace MerpBot;
 class BasicData
 {
-    public static string AppVersion = "1.3.3";
+    public static string AppVersion = "1.3.4";
 }
 
 class Program

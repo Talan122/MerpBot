@@ -22,10 +22,9 @@ public class Destiny : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("test", "Testing command.")]
     public async Task Test()
     {
-
         var apps = await Destiny2.GetDestinyManifest();
 
-        await FollowupAsync(apps.Response.ToString());
+        await RespondAsync(apps.Response.ToString());
     }
 
     [NotYetImplemented]
@@ -49,11 +48,11 @@ public class Destiny : InteractionModuleBase<SocketInteractionContext>
                 .WithDescription($"Membership ID: {response.membershipId}\nMembership Type: {response.membershipType}")
                 ;
 
-            await FollowupAsync(embed: embed.Build());
+            await ReplyAsync(embed: embed.Build());
         }
         catch (Exception e)
         {
-            await FollowupAsync($"A user likely couldn't be found.\n{e.Message}");
+            await ReplyAsync($"A user likely couldn't be found.\n{e.Message}");
         }
     }
 }

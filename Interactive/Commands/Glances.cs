@@ -26,6 +26,7 @@ public class Glances : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("test", "Test command for glances")]
     public async Task Test()
     {
+        await DeferAsync();
 
         HttpClient.DefaultRequestHeaders.Clear();
 
@@ -39,6 +40,7 @@ public class Glances : InteractionModuleBase<SocketInteractionContext>
     [NotYetImplemented]
     public async Task Uptime()
     {
+        await DeferAsync();
 
         HttpClient.DefaultRequestHeaders.Clear();
 
