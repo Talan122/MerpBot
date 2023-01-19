@@ -4,11 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MerpBot.Interactive.Options
+namespace MerpBot.Interactive.Options;
+public enum RatioOptions : int
 {
-    public enum RatioOptions : int
-    {
-        IsOutput,
-        IsInput
-    }
+    IsOutput,
+    IsInput
 }

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MerpBot.Interactive.JsonObjects
-{
-    
-}
+// Will be used in the future (maybe) for MerpBot.Interactive.Commands.Glances
+
+namespace MerpBot.Interactive.JsonObjects;

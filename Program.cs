@@ -10,82 +10,80 @@ using Microsoft.Extensions.DependencyInjection;
 using MerpBot.Services;
 using System.Net.Http;
 
-namespace MerpBot
+namespace MerpBot;
+class BasicData
 {
-    class BasicData
+    public static string AppVersion = "1.3.4";
+}
+
+class Program
+{
+    public static async Task Main(string[] args)
     {
-        public static string AppVersion = "1.3.1";
+        Console.WriteLine($"Running on version {BasicData.AppVersion}");
+        await StartUp.RunAsync(args);
+    }
+}
+
+class StartUp
+{
+    public IConfigurationRoot Configuration { get; }
+
+    public StartUp(string[] args)
+    {
+        IConfigurationBuilder builder = new ConfigurationBuilder()
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddYamlFile("_config.yml");
+        Configuration = builder.Build();
     }
 
-    class Program
+    public static async Task RunAsync(string[] args)
     {
-        public static async Task Main(string[] args)
-        {
-            Console.WriteLine($"Running on version {BasicData.AppVersion}");
-            await StartUp.RunAsync(args);
-        }
+
+        StartUp startup = new StartUp(args);
+        await startup.RunAsync();
     }
 
-    class StartUp
+    public async Task RunAsync()
     {
-        public IConfigurationRoot Configuration { get; }
+        ServiceCollection services = new ServiceCollection();
+        ConfigureServices(services);
 
-        public StartUp(string[] args)
+        ServiceProvider provider = services.BuildServiceProvider();
+        provider.GetRequiredService<CommandHandler>();
+        provider.GetRequiredService<InteractionHandler>();
+
+        await provider.GetRequiredService<InteractionHandler>().InitializeAsync();
+        await provider.GetRequiredService<StartupService>().StartAsync();
+        await Task.Delay(-1);
+    }
+
+    void ConfigureServices(IServiceCollection services)
+    {
+        services.AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
         {
-            IConfigurationBuilder builder = new ConfigurationBuilder()
-                .SetBasePath(AppContext.BaseDirectory)
-                .AddYamlFile("_config.yml");
-            Configuration = builder.Build();
-        }
-
-        public static async Task RunAsync(string[] args)
+            LogLevel = Discord.LogSeverity.Verbose,
+            MessageCacheSize = 0,
+            AlwaysDownloadUsers = true,
+            GatewayIntents = Discord.GatewayIntents.AllUnprivileged | Discord.GatewayIntents.GuildPresences | Discord.GatewayIntents.GuildMessages
+        }))
+        .AddSingleton(new CommandService(new CommandServiceConfig
         {
-
-            StartUp startup = new StartUp(args);
-            await startup.RunAsync();
-        }
-
-        public async Task RunAsync()
+            LogLevel = Discord.LogSeverity.Verbose,
+            DefaultRunMode = Discord.Commands.RunMode.Async,
+            CaseSensitiveCommands = true
+        }))
+        .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>() ,new InteractionServiceConfig
         {
-            ServiceCollection services = new ServiceCollection();
-            ConfigureServices(services);
-
-            ServiceProvider provider = services.BuildServiceProvider();
-            provider.GetRequiredService<CommandHandler>();
-            provider.GetRequiredService<InteractionHandler>();
-
-            await provider.GetRequiredService<InteractionHandler>().InitializeAsync();
-            await provider.GetRequiredService<StartupService>().StartAsync();
-            await Task.Delay(-1);
-        }
-
-        void ConfigureServices(IServiceCollection services)
-        {
-            services.AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
-            {
-                LogLevel = Discord.LogSeverity.Verbose,
-                MessageCacheSize = 0,
-                AlwaysDownloadUsers = true,
-                GatewayIntents = Discord.GatewayIntents.AllUnprivileged | Discord.GatewayIntents.GuildPresences | Discord.GatewayIntents.GuildMessages
-            }))
-            .AddSingleton(new CommandService(new CommandServiceConfig
-            {
-                LogLevel = Discord.LogSeverity.Verbose,
-                DefaultRunMode = Discord.Commands.RunMode.Async,
-                CaseSensitiveCommands = true
-            }))
-            .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>() ,new InteractionServiceConfig
-            {
-                LogLevel = Discord.LogSeverity.Verbose,
-                DefaultRunMode = Discord.Interactions.RunMode.Async,
-                UseCompiledLambda = true
-            }))
-            .AddSingleton<CommandHandler>()
-            .AddSingleton<InteractionHandler>()
-            .AddSingleton<StartupService>()
-            .AddSingleton<VolatileData>()
-            .AddSingleton<HttpClient>()
-            .AddSingleton(Configuration);
-        }
+            LogLevel = Discord.LogSeverity.Verbose,
+            DefaultRunMode = Discord.Interactions.RunMode.Async,
+            UseCompiledLambda = true
+        }))
+        .AddSingleton<CommandHandler>()
+        .AddSingleton<InteractionHandler>()
+        .AddSingleton<StartupService>()
+        .AddSingleton<VolatileData>()
+        .AddSingleton<HttpClient>()
+        .AddSingleton(Configuration);
     }
 }
