@@ -4,12 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MerpBot.Interactive.Options
+namespace MerpBot.Interactive.Options;
+public enum TempOptions : int
 {
-    public enum TempOptions : int
-    {
-        Fahrenheit,
-        Celcius,
-        Kelvin
-    }
+    Fahrenheit,
+    Celcius,
+    Kelvin
 }

@@ -5,32 +5,32 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Threading.Tasks;
 
-namespace MerpBot.Services
+namespace MerpBot.Services;
+public class InteractionHandler
 {
-    public class InteractionHandler
+    public static IServiceProvider _provider;
+    public static DiscordSocketClient _discord;
+    public static IConfigurationRoot _config;
+    public static InteractionService _interactions;
+
+    public InteractionHandler(IServiceProvider provider, DiscordSocketClient discord, InteractionService interactions)
     {
-        public static IServiceProvider _provider;
-        public static DiscordSocketClient _discord;
-        public static IConfigurationRoot _config;
-        public static InteractionService _interactions;
+        _provider = provider;
+        _discord = discord;
+        _interactions = interactions;
 
-        public InteractionHandler(IServiceProvider provider, DiscordSocketClient discord, InteractionService interactions, IConfigurationRoot config)
-        {
-            _provider = provider;
-            _discord = discord;
-            _config = config;
-            _interactions = interactions;
+        _discord.InteractionCreated += OnInteractionCreated;
+        _interactions.SlashCommandExecuted += OnSlashCommandExecuted;
+    }
 
-            _discord.InteractionCreated += OnInteractionCreated;
-            _interactions.SlashCommandExecuted += OnSlashCommandExecuted;
-        }
+    public async Task InitializeAsync()
+    {
+        await _interactions.AddModulesAsync(System.Reflection.Assembly.GetEntryAssembly(), _provider);
+    }
 
-        public async Task InitializeAsync()
-        {
-            await _interactions.AddModulesAsync(System.Reflection.Assembly.GetEntryAssembly(), _provider);
-        }
-
-        private async Task OnSlashCommandExecuted(SlashCommandInfo command, IInteractionContext context, IResult result)
+    private Task OnSlashCommandExecuted(SlashCommandInfo command, IInteractionContext context, IResult result)
+    {
+        _ = Task.Run(async () =>
         {
             //exceptions
             if (result.Error == InteractionCommandError.Exception)
@@ -56,17 +56,18 @@ namespace MerpBot.Services
                 else
                     await context.Interaction.FollowupAsync(result.ErrorReason, ephemeral: true);
             }
-        }
+        });
+        return Task.CompletedTask;
+    }
 
-        private async Task OnInteractionCreated(SocketInteraction interaction)
+    private Task OnInteractionCreated(SocketInteraction interaction)
+    {
+        _ = Task.Run(async () =>
         {
-            Console.WriteLine(DateTime.Now.ToString("HH:mm:ss:ffff") + " (In OnInteractionCreated)");
-
             SocketInteractionContext context = new SocketInteractionContext(_discord, interaction);
             try
             {
-                // Create an execution context that matches the generic type parameter of your InteractionModuleBase<T> modules   
-                await interaction.DeferAsync();
+                // Create an execution context that matches the generic type parameter of your InteractionModuleBase<T> modules
                 await _interactions.ExecuteCommandAsync(context, _provider);
             }
             catch (Exception e)
@@ -84,6 +85,7 @@ namespace MerpBot.Services
                 if (interaction.Type == InteractionType.ApplicationCommand)
                     await interaction.GetOriginalResponseAsync().ContinueWith(async (msg) => await msg.Result.DeleteAsync());
             }
-        }
+        });
+        return Task.CompletedTask;
     }
 }
