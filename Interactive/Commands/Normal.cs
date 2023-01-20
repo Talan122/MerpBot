@@ -18,6 +18,7 @@ using HttpStatusCode = MerpBot.Interactive.Options.HttpStatusCode;
 using System.CodeDom;
 
 namespace MerpBot.Interactive.Commands;
+[Group("normal", "'Normal' commands.")]
 public class Normal : InteractionModuleBase<SocketInteractionContext>
 {
     public VolatileData VolatileData { get; set; }
@@ -124,13 +125,18 @@ public class Normal : InteractionModuleBase<SocketInteractionContext>
 
         await FollowupAsync($"http://http.{PetType}/{code}.jpg");
     }
-
-    /* Commented out because who the hell needs this?
+    
     [SlashCommand("avatar", "Gets the avatar of whoever you put in.")]
-    [RequireChannel]
     public async Task Avatar(SocketUser user, AvatarSizeOptions size = AvatarSizeOptions.S256)
     {
         var avatar = user.GetAvatarUrl(size: (ushort)size);
-        await FollowupAsync(avatar);
-    }*/
+        await RespondAsync(avatar);
+    }
+
+    [SlashCommand("owofy", "I wegwet nyothing")]
+    public async Task OwOfy(string input)
+    {
+        // I had to use this method eventually lol
+        await RespondAsync(OtherStuff.OwOfy(input));
+    }
 }

@@ -94,7 +94,7 @@ public class Admin : InteractionModuleBase<SocketInteractionContext>
 
     [RequireOwner]
     [SlashCommand("dm", "DMs a member.")]
-    public async Task DM(IGuildUser user, string data)
+    public async Task DM(IUser user, string data)
     {
         await user.SendMessageAsync(data);
         await RespondAsync($"Sent \"{data}\" to <@!{user.Id}>", ephemeral: true);

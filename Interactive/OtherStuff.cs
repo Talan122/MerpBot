@@ -46,9 +46,19 @@ public class OtherStuff
             .Replace("Ni", "Nyi")
             .Replace("ni", "nyi");
 
-        if (Result == input) Result = input + " OwO";
+        return Result + $" {RandomString(new string[] { "OwO", "uwu", ">~<" })}";
+    }
 
-        return Result;
+    /// <summary>
+    /// Chooses a random string out of the array you give.
+    /// </summary>
+    /// <param name="input"></param>
+    /// <returns></returns>
+    public static string RandomString(string[] input)
+    {
+        int rand = new Random().Next(input.Length);
+
+        return input[rand];
     }
 
     public static string Reverse(string s)
