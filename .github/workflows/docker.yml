@@ -38,3 +38,4 @@ jobs:
           context: .
           push: true
           tags: ghcr.io/talan122/merpbot:${{ steps.short_sha.outputs.short_sha }},ghcr.io/talan122/merpbot:latest
+          platform: linux/amd64
