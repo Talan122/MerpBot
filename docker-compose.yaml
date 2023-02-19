@@ -1,0 +1,6 @@
+﻿version: '3'
+services:
+  bot:
+    build: .
+    volumes:
+     - ./_config.yml:/app/_config.yml
