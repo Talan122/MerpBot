@@ -17,6 +17,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
       - name: Get short sha
         id: short_sha
         run: |
@@ -37,5 +43,5 @@ jobs:
         with:
           context: .
           push: true
-          tags: user/app:latest
-          platforms: linux/amd64, linux/arm64
+          tags: ghcr.io/talan122/merpbot:${{ steps.short_sha.outputs.short_sha }},ghcr.io/talan122/merpbot:latest
+          platforms: linux/amd64,linux/arm64
