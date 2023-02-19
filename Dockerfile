@@ -5,7 +5,7 @@ WORKDIR /build
 COPY src/ .
 COPY MerpBot.csproj .
 # Restore as distinct layers
-RUN dotnet restore
+RUN dotnet restore -r linux-arm64
 # Build and publish a release
 RUN dotnet publish -c Release -o /out -r linux-arm64
 
