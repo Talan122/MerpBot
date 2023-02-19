@@ -19,7 +19,6 @@ public class UserCommands : InteractionModuleBase<SocketInteractionContext>
     public DiscordWebhookClient WebhookClient { get; set; }
 
     [MessageCommand("PinMessage")]
-    [NotYetImplemented]
     [RequireGuild(851204839605927946)]
     public async Task PinMessage(IMessage message)
     {

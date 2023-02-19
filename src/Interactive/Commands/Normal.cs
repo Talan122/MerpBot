@@ -3,6 +3,7 @@ using Discord.WebSocket;
 using Discord.Interactions;
 using System;
 using System.Linq;
+using System.Data;
 using System.Threading.Tasks;
 using MerpBot.Services;
 using MerpBot.Interactive.Preconditions;
@@ -29,26 +30,19 @@ public class Normal : InteractionModuleBase<SocketInteractionContext>
     public HttpClient HttpClient { get; set; }
 
     [SlashCommand("test", "Test command")]
-    public async Task Test()
+    public async Task Test(string equation)
     {
-        var handler = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            ? new SteamHandler(new WindowsRegistry())
-            : new SteamHandler(registry: null);
-
-        // method 1: iterate over the game-error result
-        foreach (var (game, error) in handler.FindAllGames())
+        try
         {
-            if (game is not null)
-            {
-                Console.WriteLine($"Found {game}");
-            }
-            else
-            {
-                Console.WriteLine($"Error: {error}");
-            }
-        }
+            DataTable table = new DataTable();
 
-        await RespondAsync("Check your console.");
+            var parse = table.Compute(equation, "");
+            await RespondAsync(parse.ToString());
+        }
+        catch(Exception e)
+        {
+            await RespondAsync("Invalid operation.", ephemeral: true);
+        }
     }
 
     [SlashCommand("ping", "Pong!")]

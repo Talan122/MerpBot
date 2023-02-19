@@ -23,6 +23,7 @@ class Program
     {
         Console.WriteLine($"Running on version {BasicData.AppVersion}");
         await StartUp.RunAsync(args);
+
     }
 }
 

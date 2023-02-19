@@ -39,7 +39,7 @@ public class CommandHandler
     {
 
         Helpers.ConsoleWithTimeStamp($"Connected as {_discord.CurrentUser.Username}#{_discord.CurrentUser.Discriminator}");
-        await _discord.SetGameAsync("merp merp merp merp merp merp merp merp merp", type: ActivityType.Listening);
+        await _discord.SetGameAsync("Now Dockerized!", type: ActivityType.Playing);
         // InteractionHandler._interactions.RegisterCommandsToGuildAsync(851204839605927946);
         // Only uncomment if you're having issues with /register!
     }
