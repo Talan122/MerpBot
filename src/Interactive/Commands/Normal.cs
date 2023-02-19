@@ -16,6 +16,9 @@ using System.ComponentModel;
 using System.Net;
 using HttpStatusCode = MerpBot.Interactive.Options.HttpStatusCode;
 using System.CodeDom;
+using GameFinder.RegistryUtils;
+using GameFinder.StoreHandlers.Steam;
+using System.Runtime.InteropServices;
 
 namespace MerpBot.Interactive.Commands;
 [Group("normal", "'Normal' commands.")]
@@ -26,9 +29,26 @@ public class Normal : InteractionModuleBase<SocketInteractionContext>
     public HttpClient HttpClient { get; set; }
 
     [SlashCommand("test", "Test command")]
-    public async Task Test(string? test = null)
+    public async Task Test()
     {
-        await RespondAsync(test ?? "naw fam");
+        var handler = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? new SteamHandler(new WindowsRegistry())
+            : new SteamHandler(registry: null);
+
+        // method 1: iterate over the game-error result
+        foreach (var (game, error) in handler.FindAllGames())
+        {
+            if (game is not null)
+            {
+                Console.WriteLine($"Found {game}");
+            }
+            else
+            {
+                Console.WriteLine($"Error: {error}");
+            }
+        }
+
+        await RespondAsync("Check your console.");
     }
 
     [SlashCommand("ping", "Pong!")]
