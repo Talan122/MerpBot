@@ -56,11 +56,14 @@ public static class WebhookService
 
     public static async Task WriteWebhooksToFileAsync(Dictionary<string, DiscordWebhookClient> clients)
     {
-        Webhooks toWrite = new Webhooks();
+        Webhooks toWrite = new Webhooks()
+        {
+            Servers = new()
+        };
 
         foreach(var clientKey in clients.Keys)
         {
-            var client = (IWebhook)clients[clientKey];
+            var client = clients[clientKey].Webhook;
             Server server = new Server()
             {
                 ChannelID = client.ChannelId,
