@@ -1,0 +1,8 @@
+﻿{
+  "Servers": {
+    "ServerID": {
+      "ChannelID": 1,
+      "WebhookID": 1
+    }
+  }
+}

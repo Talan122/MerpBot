@@ -1,0 +1,11 @@
+﻿LogLevel: "Verbose"
+
+DebugGuild: 
+
+Channels:
+  ErrorChannel: 
+
+
+StartupStatus:
+  StatusType: "Playing"
+  StatusMessage: ""
