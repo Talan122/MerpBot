@@ -4,11 +4,9 @@ using YoutubeExplode.Videos.Streams;
 namespace MerpBot.Interactions.Commands;
 public class Download
 {
-    public Dictionary<string, Func<Task<Data>>> Downloaders = new Dictionary<string, Func<Task<Data>>>();
+    public Dictionary<string, Func<string, Task<Data>>> Downloaders = new Dictionary<string, Func<string, Task<Data>>>();
 
     public YoutubeClient YoutubeClient { get; set; }
-
-    private string Url { get; set; } = string.Empty;
 
     public Download()
     {
@@ -17,19 +15,17 @@ public class Download
         Downloaders["youtube"] = YoutubeDownload;
     }
 
-    private async Task<Data> YoutubeDownload()
+    private async Task<Data> YoutubeDownload(string url)
     {
 
-        if(Url == "") throw new NullReferenceException(nameof(Url));
-
-        var About = await YoutubeClient.Videos.GetAsync(Url);
+        var About = await YoutubeClient.Videos.GetAsync(url);
 
         Data videoData = new Data()
             .WithName(About.Title)
             .WithDescription(About.Description)
             .WithTime(About.Duration ?? new TimeSpan());
 
-        var Manifest = await YoutubeClient.Videos.Streams.GetManifestAsync(Url);
+        var Manifest = await YoutubeClient.Videos.Streams.GetManifestAsync(url);
 
         var StreamInfo = Manifest.GetMuxedStreams().GetWithHighestVideoQuality();
 
@@ -39,20 +35,6 @@ public class Download
 
         return videoData;
             
-    }
-
-    /// <summary>
-    /// Downloads content from any source.
-    /// </summary>
-    /// <param name="url"></param>
-    /// <returns>Returns null if that source is not yet supported, otherwise it returns the data needed.</returns>
-    public async Task<Data?> DownloadContent(string url)
-    {
-        Url = url;
-
-        if(url.Contains("youtube") || url.Contains("youtu.be")) return await Downloaders["youtube"]();
-
-        return null;
     }
 }
 

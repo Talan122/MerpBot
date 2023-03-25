@@ -43,15 +43,28 @@ public class Normal : InteractionModuleBase<SocketInteractionContext>
     {
         try
         {
+            if(link.Contains(' '))
+            {
+                await RespondAsync("A link cant contain a space.", ephemeral: true);
+            }
+
+            string[] root = link.Split('/');
+
+            if (root[0] != "https:" || root[1] != "") await RespondAsync("This link is invalid.", ephemeral: true);
+
             await DeferAsync();
 
-            var Data = await Downloader.DownloadContent(link);
+            string rootDL = root[2];
 
-            if (Data == null)
+            FixRoot(ref rootDL);
+
+            if(!Downloader.Downloaders.ContainsKey(rootDL))
             {
-                await FollowupAsync("You're likely using an unsuported link. Currently, it's only `youtube`");
+                await FollowupAsync($"You're likely using an unsuported link. Currently, it's only `{Downloader.Downloaders.Keys}`");
                 return;
             }
+
+            var Data = await Downloader.Downloaders[rootDL](link);
 
             await FollowupWithFileAsync(Data.Stream ?? throw new FileNotFoundException(), $"{Data.Name ?? "dl"}.mp4");
         }
@@ -67,6 +80,16 @@ public class Normal : InteractionModuleBase<SocketInteractionContext>
             Logger.Error(error);
             await Helpers.ErrorChannel.SendMessageAsync(embed: Helpers.GenerateErrorEmbed(Context, error.Message));
         }
+    }
+
+    /// <summary>
+    /// There are certain subdomains of some sites that the downloaders DO support but are not properly registered in Download.Downloaders.
+    /// This is more or less a bandaid fix.
+    /// </summary>
+    /// <param name="root"></param>
+    private void FixRoot(ref string root)
+    {
+        if (root == "youtu.be") root = "youtube";
     }
 }
 

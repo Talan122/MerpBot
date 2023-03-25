@@ -17,6 +17,8 @@ public static class WebhookService
     /// <param name="clients">Ref variable. Suggest using the already-existing dictionary in singletons.</param>
     public static void GetDiscordWebhookClients(ref Dictionary<string, DiscordWebhookClient> clients)
     {
+
+
         Dictionary<string, DiscordWebhookClient> _clients = new Dictionary<string, DiscordWebhookClient>();
 
         Task.Run(async () =>
@@ -30,6 +32,8 @@ public static class WebhookService
                 _clients[server.ServerID.ToString()] = await GetWebhookClientAsync(server);
             }
         }).Wait();
+
+        
 
         clients = _clients;
     }
