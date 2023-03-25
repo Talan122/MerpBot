@@ -5,6 +5,7 @@ using Discord.Interactions;
 using MerpBot.Services;
 using System.Text;
 using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 
 namespace MerpBot.Interactions.Commands;
 public class Normal : InteractionModuleBase<SocketInteractionContext>
@@ -60,20 +61,21 @@ public class Normal : InteractionModuleBase<SocketInteractionContext>
 
             if(!Downloader.Downloaders.ContainsKey(rootDL))
             {
-                await FollowupAsync($"You're likely using an unsuported link. Currently, it's only `{Downloader.Downloaders.Keys}`");
+
+                await FollowupAsync($"You're likely using an unsuported link. Currently, it's only `{Helpers.CombineStringArray(Downloader.Downloaders.Keys.ToArray())}`");
                 return;
             }
 
             var Data = await Downloader.Downloaders[rootDL](link);
 
-            await FollowupWithFileAsync(Data.Stream ?? throw new FileNotFoundException(), $"{Data.Name ?? "dl"}.mp4");
+            await FollowupWithFileAsync(Data.Stream ?? throw new FileNotFoundException(), $"{Data.Name ?? "dl"}.{Data.FileExtention}");
         }
         catch (Exception e) { await HandleDownloadErrors(e); }
     }
 
     private async Task HandleDownloadErrors(Exception error)
     {
-        if (error.Message == "File is larger than 8gb") await FollowupAsync("The file was larger than 8mb and couldn't be uploaded.");
+        if (error.Message == "File is larger than 8mb") await FollowupAsync("The file was larger than 8mb and couldn't be uploaded.");
         else
         {
             await FollowupAsync("There was an error running this command. Check the error channel.");
@@ -84,11 +86,13 @@ public class Normal : InteractionModuleBase<SocketInteractionContext>
 
     /// <summary>
     /// There are certain subdomains of some sites that the downloaders DO support but are not properly registered in Download.Downloaders.
-    /// This is more or less a bandaid fix.
+    /// This is more or less a bandaid fix for bad code lol
     /// </summary>
     /// <param name="root"></param>
     private void FixRoot(ref string root)
     {
+        root = Regex.Replace(root, @"www\.|\.com|\.net", "");
+
         if (root == "youtu.be") root = "youtube";
     }
 }

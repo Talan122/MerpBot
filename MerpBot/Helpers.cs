@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json.Bson;
 using System.Text;
 
 namespace MerpBot;
@@ -44,6 +45,18 @@ public static class Helpers
         Logger.Log(message.Message, message.Severity, message.Source);
 
         return Task.CompletedTask;
+    }
+
+    public static string CombineStringArray(string[] array)
+    {
+        string result = "";
+
+        foreach(var str in array) 
+        {
+            result += str;
+        }
+
+        return result;
     }
 
     /// <summary>
