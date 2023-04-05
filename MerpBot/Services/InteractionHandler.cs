@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using MerpBot.Interactions.Interfaces;
 using Microsoft.Extensions.Configuration;
 
 namespace MerpBot.Services;
@@ -27,6 +28,7 @@ public class InteractionHandler
     public async Task InitAsync()
     {
         Logger.Debug("Initializing slash commands.");
+        Interactions.AddGenericTypeConverter<ISnowflake>(typeof(SnowflakeConverter<>));
         await Interactions.AddModulesAsync(System.Reflection.Assembly.GetEntryAssembly(), Provider);
     }
 

@@ -40,4 +40,6 @@
     </None>
   </ItemGroup>
 
+  <ProjectExtensions><VisualStudio><UserProperties globals_1yml__JsonSchema="Globals_tmp.yml" /></VisualStudio></ProjectExtensions>
+
 </Project>

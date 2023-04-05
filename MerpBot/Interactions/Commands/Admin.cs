@@ -38,4 +38,29 @@ public class Admin : InteractionModuleBase<SocketInteractionContext>
         }
     }
 
+    [SlashCommand("setstatus", "Sets the status of the bot.")]
+    [RequireOwner]
+    public async Task SetStatus(ActivityTypeForBot activity, string name)
+    {
+        await Client.SetGameAsync(name, type: Enum.Parse<ActivityType>(activity.ToString()));
+        await RespondAsync($"Set status to \"{activity} {name}\"", ephemeral: true);
+    }
+
+    [SlashCommand("invitelink", "Get the invite link of the bot.")]
+    [RequireOwner]
+    public async Task InviteLink()
+    {
+        await RespondAsync($"https://discord.com/api/oauth2/authorize?client_id=886710931906773053&permissions=8&scope=applications.commands%20bot", ephemeral: true);
+    }
+}
+
+// This is the same as Discord.ActivityType but without CustomStatus since bots cant even use it.
+public enum ActivityTypeForBot
+{
+    Playing,
+    Streaming,
+    Listening,
+    Watching,
+    //CustomStatus,
+    Competing = 5
 }

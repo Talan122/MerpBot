@@ -1,4 +1,5 @@
 ﻿using MerpBot.Start;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MerpBot;
 public class Program
@@ -8,6 +9,7 @@ public class Program
     public static async Task Main(string[] args)
     {
         Console.WriteLine(Version);
+
         await StartUp.StartAsync(args);
     }
 }

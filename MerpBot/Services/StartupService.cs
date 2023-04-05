@@ -39,27 +39,33 @@ public class StartupService
 
     private async Task OnReady()
     {
+        try
+        {
+            WebhookService.GetDiscordWebhookClients(ref Webhooks);
 
-        WebhookService.GetDiscordWebhookClients(ref Webhooks);
+            Logger.Info($"Connected as {Discord.CurrentUser.Username}#{Discord.CurrentUser.Discriminator}", "Startup");
 
-        Logger.Info($"Connected as {Discord.CurrentUser.Username}#{Discord.CurrentUser.Discriminator}", "Startup");
+            ActivityType Activity = ActivityType.Playing;
 
-        ActivityType Activity = ActivityType.Playing;
+            if (!Enum.TryParse(Config["StartupStatus:StatusType"], out Activity))
+                Logger.Warning("Activity type is not set correctly in Globals.yml. Defaulting to Playing.", "Startup"); // No need to crash.
 
-        if(!Enum.TryParse(Config["StartupStatus:StatusType"], out Activity)) 
-            Logger.Warning("Activity type is not set correctly in Globals.yml. Defaulting to Playing.", "Startup"); // No need to crash.
+            await Discord.SetGameAsync(Config["StartupStatus:StatusMessage"], type: Activity);
+            Logger.Verbose($"Set activity to type {Activity}, type {Config["StartupStatus:StatusMessage"]}", "Startup");
 
-        await Discord.SetGameAsync(Config["StartupStatus:StatusMessage"], type: Activity);
-        Logger.Verbose($"Set activity to type {Activity}, type {Config["StartupStatus:StatusMessage"]}", "Startup");
+            if (!ulong.TryParse(Config["Channels:ErrorChannel"], out ulong ChannelID))
+                Logger.CriticalWithCrash("Error channel could not be found. Make sure it's set to a valid channel in Globals.yml.", "Startup");
 
-        if(!ulong.TryParse(Config["Channels:ErrorChannel"], out ulong ChannelID)) 
-            Logger.CriticalWithCrash("Error channel could not be found. Make sure it's set to a valid channel in Globals.yml.", "Startup");
+            Helpers.ErrorChannel = (ITextChannel)Discord.GetChannel(ChannelID);
 
-        Helpers.ErrorChannel = (ITextChannel)Discord.GetChannel(ChannelID);
+            if (!ulong.TryParse(Config["DebugGuild"], out ulong DebugGuild))
+                Logger.CriticalWithCrash("Debug guild could not be found. Make sure it's set to a valid guild in Globals.yml.", "Startup");
 
-        if (!ulong.TryParse(Config["DebugGuild"], out ulong DebugGuild))
-            Logger.CriticalWithCrash("Debug guild could not be found. Make sure it's set to a valid guild in Globals.yml.", "Startup");
-
-        await InteractionHandler.Interactions.RegisterCommandsToGuildAsync(DebugGuild);
+            await InteractionHandler.Interactions.RegisterCommandsToGuildAsync(DebugGuild);
+        }
+        catch(Exception ex)
+        {
+            Logger.Error(ex);
+        }
     }
 }

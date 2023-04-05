@@ -6,6 +6,10 @@ using MerpBot.Services;
 using System.Text;
 using Newtonsoft.Json;
 using System.Text.RegularExpressions;
+using MerpBot.Interactions.Autocomplete;
+using MerpBot.Interactions.Enums;
+using System.Security.Cryptography.X509Certificates;
+using MerpBot.Interactions.Interfaces;
 
 namespace MerpBot.Interactions.Commands;
 public class Normal : InteractionModuleBase<SocketInteractionContext>
@@ -19,6 +23,12 @@ public class Normal : InteractionModuleBase<SocketInteractionContext>
     public async Task Test()
     {
         await RespondAsync(Math.PI.ToString());
+    }
+
+    [SlashCommand("snowflake", "Convert a snowflake to a readable time.")]
+    public async Task Snowflake(ISnowflake snowflake)
+    {
+        await RespondAsync($"<t:{snowflake.ToUnixTimestampSeconds()}>");
     }
 
     [SlashCommand("getplayers", "Gets players on a steam game.")]
@@ -37,6 +47,20 @@ public class Normal : InteractionModuleBase<SocketInteractionContext>
         }
 
         await FollowupAsync($"Current online players: {players.response.player_count}");
+    }
+
+    [SlashCommand("httpcat", "Http cat.")]
+    public async Task HttpCat([Autocomplete(typeof(HttpCodes))] int code)
+    {
+        string str = "";
+
+        if (!Enum.IsDefined(typeof(HttpStatusCodeExtention), code)) 
+        { 
+            code = 404; 
+            str = "This wasn't a valid http code."; 
+        }
+
+        await RespondAsync($"{str}\nhttps://http.cat/{code}.jpg");
     }
 
     [SlashCommand("download", "Downloads a video/image.")]
