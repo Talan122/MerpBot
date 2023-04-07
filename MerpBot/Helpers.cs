@@ -187,7 +187,8 @@ public class Logger
             GlobalSeverity = globalSeverity; 
         else CrashWhenNoSeverityIsFound();
 
-        StreamWriter = new StreamWriter($"{Helpers.RootFolder}\\logs\\{DateTime.Now.ToString("MM-dd-yyyy HH_mm_ss")}.txt");
+        //StreamWriter = new StreamWriter($"{Helpers.RootFolder}\\logs\\{DateTime.Now.ToString("MM-dd-yyyy HH_mm_ss")}.txt");
+        StreamWriter = new StreamWriter(Path.Combine(Helpers.RootFolder, "logs", $"{DateTime.Now.ToString("MM-dd-yyyy HH_mm_ss")}.txt"));
 
         PostSeverity();
     }

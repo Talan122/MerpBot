@@ -40,7 +40,7 @@ public static class WebhookService
 
     private static async Task<Webhooks> GetWebhooksFromFileAsync()
     {
-        string jsonFile = Helpers.CombineStringArray(await File.ReadAllLinesAsync($"{Helpers.RootFolder}\\webhooks.json"), " ");
+        string jsonFile = Helpers.CombineStringArray(await File.ReadAllLinesAsync(Path.Combine(Helpers.RootFolder, "webhooks.json")), " ");
 
         Webhooks? result = JsonConvert.DeserializeObject<Webhooks>(jsonFile);
 
@@ -79,6 +79,6 @@ public static class WebhookService
         }
 
         var json = JsonConvert.SerializeObject(toWrite);
-        await File.WriteAllTextAsync($"{Helpers.RootFolder}\\webhooks.json", json);
+        await File.WriteAllTextAsync(Path.Combine(Helpers.RootFolder, "webhooks.json"), json);
     }
 }
