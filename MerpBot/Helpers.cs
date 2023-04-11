@@ -232,10 +232,28 @@ public class Logger
     /// </summary>
     /// <param name="message">Message to log.</param>
     /// <param name="source">Source of message. Defaults to null.</param>
-    public void Debug(string message, string? source = null)
+    public void Debug(string message, string? source = null, bool skipCheck = false)
     {
+        if(skipCheck)
+        {
+            DebugSkip(message, source);
+            return;
+        }
+
         if (GlobalSeverity < LogSeverity.Debug) return;
 
+        Helpers.Log(new LogMessage(message, source, LogSeverity.Debug));
+
+        WriteToFile(message, LogSeverity.Debug, source);
+    }
+
+    /// <summary>
+    /// Log something as debug. Skips the check for severity.
+    /// </summary>
+    /// <param name="message">Message to log.</param>
+    /// <param name="source">Source of message. Defaults to null.</param>
+    private void DebugSkip(string message, string? source = null)
+    {
         Helpers.Log(new LogMessage(message, source, LogSeverity.Debug));
 
         WriteToFile(message, LogSeverity.Debug, source);

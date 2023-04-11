@@ -9,3 +9,5 @@ Channels:
 StartupStatus:
   StatusType: "Playing"
   StatusMessage: ""
+
+MaxFileSize: 8000000 # Don't change unless you know what you're doing, this is the max file size allowed by Discord.

@@ -30,7 +30,7 @@
 
   <ItemGroup>
     <None Update="Globals.yml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="logs\README.md">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

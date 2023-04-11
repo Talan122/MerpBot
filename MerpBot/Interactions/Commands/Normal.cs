@@ -99,7 +99,7 @@ public class Normal : InteractionModuleBase<SocketInteractionContext>
 
     private async Task HandleDownloadErrors(Exception error)
     {
-        if (error.Message == "File is larger than 8mb") await FollowupAsync("The file was larger than 8mb and couldn't be uploaded.");
+        if (error.Message == $"File is larger than {Downloader.MaxFileSize}") await FollowupAsync($"The file was larger than {Downloader.MaxFileSize} and couldn't be uploaded.");
         else
         {
             await FollowupAsync("There was an error running this command. Check the error channel.");

@@ -12,6 +12,7 @@ public class Admin : InteractionModuleBase<SocketInteractionContext>
 {
     public Logger Logger { get; set; }
     public DiscordSocketClient Client { get; set; }
+    public HttpClient HttpClient { get; set; }
 
     [SlashCommand("shutdown", "Shutdown the bot.")]
     [RequireOwner]
@@ -51,6 +52,25 @@ public class Admin : InteractionModuleBase<SocketInteractionContext>
     public async Task InviteLink()
     {
         await RespondAsync($"https://discord.com/api/oauth2/authorize?client_id=886710931906773053&permissions=8&scope=applications.commands%20bot", ephemeral: true);
+    }
+
+    [SlashCommand("setavatar", "Sets the bot's avatar.")]
+    [RequireOwner]
+    public async Task SetAvatar(IAttachment image)
+    {
+        if (!(image.Url.EndsWith(".png") || image.Url.EndsWith(".jpg")))
+        {
+            await RespondAsync("Must be either a .png or a .jpg file.", ephemeral: true);
+            return;
+        }
+
+        await DeferAsync(ephemeral: true);
+
+        Image avatar = new((Stream)image);
+
+        await Client.CurrentUser.ModifyAsync(props => props.Avatar = avatar);
+
+        await FollowupAsync($"Successfully set my pfp to {image.Url}");
     }
 }
 

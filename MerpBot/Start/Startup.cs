@@ -69,7 +69,7 @@ public class StartUp
             .AddSingleton<InteractionHandler>()
             .AddSingleton<Logger>()
             .AddSingleton<StartupService>()
-            .AddSingleton(x => new Download(x.GetRequiredService<Logger>()))
+            .AddSingleton(x => new Download(x.GetRequiredService<Logger>(), Configuration))
             .AddSingleton<HttpClient>()
             .AddSingleton(Configuration);
     }

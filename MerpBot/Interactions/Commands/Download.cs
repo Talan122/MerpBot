@@ -1,5 +1,9 @@
-﻿using HtmlAgilityPack;
+﻿using AngleSharp;
+using HtmlAgilityPack;
+using Microsoft.Extensions.Configuration;
+using System.Runtime.InteropServices;
 using YoutubeExplode;
+using YoutubeExplode.Common;
 using YoutubeExplode.Videos.Streams;
 
 namespace MerpBot.Interactions.Commands;
@@ -10,12 +14,17 @@ public class Download
     public YoutubeClient YoutubeClient { get; set; }
     public HttpClient RedditHttpClient { get; set; }
     public Logger Logger { get; set; }
+    //public IConfigurationRoot Config { get; set; }
+    public FileSize MaxFileSize { get; set; }
 
-    public Download(Logger logger)
+    public Download(Logger logger, IConfigurationRoot config)
     {
         Logger = logger;
         YoutubeClient = new YoutubeClient();
         RedditHttpClient = new HttpClient();
+        //Config = config;
+
+        MaxFileSize = new FileSize(int.Parse(config["MaxFileSize"]));
 
         Downloaders["youtube"] = YoutubeDownload;
         Downloaders["reddit"] = RedditDownload;
@@ -23,7 +32,6 @@ public class Download
 
     private async Task<Data> YoutubeDownload(string url)
     {
-
         var About = await YoutubeClient.Videos.GetAsync(url);
 
         Data videoData = new Data()
@@ -34,11 +42,13 @@ public class Download
 
         var Manifest = await YoutubeClient.Videos.Streams.GetManifestAsync(url);
 
-        var StreamInfo = Manifest.GetMuxedStreams().GetWithHighestVideoQuality();
+        var StreamInfo = Manifest.GetMuxedStreams().Where(x => x.Size < MaxFileSize).Where(x => x.Container != new Container("3gpp"));
 
-        if (StreamInfo.Size > new FileSize(8000000 /* 8 megabyes */)) throw new Exception("File is larger than 8mb");
+        if (!StreamInfo.Any()) throw new Exception($"File is larger than {MaxFileSize}");
 
-        videoData.WithStream(await YoutubeClient.Videos.Streams.GetAsync(StreamInfo));
+        Logger.Debug(StreamInfo.GetWithHighestBitrate().Size.ToString(), skipCheck: true);
+
+        videoData.WithStream(await YoutubeClient.Videos.Streams.GetAsync(StreamInfo.GetWithHighestBitrate()));
 
         return videoData; 
     }
