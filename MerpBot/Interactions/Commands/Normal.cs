@@ -20,9 +20,20 @@ public class Normal : InteractionModuleBase<SocketInteractionContext>
     public HttpClient HttpClient { get; set; }
 
     [SlashCommand("test", "Test Command")]
-    public async Task Test()
+    public async Task Test(ulong num)
     {
-        await RespondAsync(Math.PI.ToString());
+        await RespondAsync(Factorial(num).ToString());
+    }
+
+    private ulong Factorial(ulong num)
+    {
+        ulong result = 1;
+        for (ulong i = num; i > 0; i--)
+        {
+            result *= i;
+        }
+
+        return result;
     }
 
     [SlashCommand("snowflake", "Convert a snowflake to a readable time.")]
@@ -92,7 +103,11 @@ public class Normal : InteractionModuleBase<SocketInteractionContext>
 
             var Data = await Downloader.Downloaders[rootDL](link);
 
-            await FollowupWithFileAsync(Data.Stream ?? throw new FileNotFoundException(), $"{Data.Name ?? "dl"}.{Data.FileExtention}");
+            string text = string.Empty;
+
+            if (Data.Size is not null) text = $"Size: {Data.Size}";
+
+            await FollowupWithFileAsync(Data.Stream ?? throw new FileNotFoundException(), $"{Data.Name ?? "dl"}.{Data.FileExtention}", text: text);
         }
         catch (Exception e) { await HandleDownloadErrors(e); }
     }

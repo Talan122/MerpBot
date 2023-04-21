@@ -13,18 +13,47 @@ public class PinMessage : InteractionModuleBase<SocketInteractionContext>
     public IConfigurationRoot Configuration { get; set; }
     public Logger Logger { get; set; }
 
-    [MessageCommand("PinMessage")]
+    [MessageCommand("Pin Message")]
     public async Task PinMsg(IMessage message) // name had to be different for the class lol (im stupid and didnt think ahead)
     {
+        IGuildChannel guildChannel = (IGuildChannel)message.Channel;
+
+
         try
         {
+            IGuildChannel channel = (IGuildChannel)guildChannel;
+
+            string content = "";
+
+            if(message.Attachments.Any())
+            {
+                foreach(Attachment attachment in message.Attachments)
+                    content += $"{attachment.Url}\n";
+            }
+
+            if (message.Embeds.Any())
+            {
+                foreach (var embed in message.Embeds)
+                    content += $"{embed.Url}\n";
+            }
+
+            if (message.Content != string.Empty) content += $"\n\n{message.Content}";
+
+            ComponentBuilder buttons = new ComponentBuilder()
+                .WithButton(
+                    label: "Jump", 
+                    style: ButtonStyle.Link, 
+                    url: $"https://discord.com/channels/{channel.GuildId}/{channel.Id}/{message.Id}"
+                );
+
             // yeah this is a one-liner, deal with it.
 
             await StartupService.Webhooks[Context.Guild.Id.ToString()]
                 .SendMessageAsync(
-                text: message.Content,
+                text: content,
                 username: message.Author.Username,
-                avatarUrl: message.Author.GetAvatarUrl()
+                avatarUrl: message.Author.GetAvatarUrl(),
+                components: buttons.Build()
                 );
 
             await RespondAsync("Pinned this message to the pin channel.", ephemeral: true);

@@ -42,13 +42,18 @@ public class Download
 
         var Manifest = await YoutubeClient.Videos.Streams.GetManifestAsync(url);
 
-        var StreamInfo = Manifest.GetMuxedStreams().Where(x => x.Size < MaxFileSize).Where(x => x.Container != new Container("3gpp"));
+        var StreamInfo = Manifest.GetMuxedStreams()
+            .Where(x => x.Size < MaxFileSize)
+            .Where(x => x.Container != new Container("3gpp"));
 
         if (!StreamInfo.Any()) throw new Exception($"File is larger than {MaxFileSize}");
 
         Logger.Debug(StreamInfo.GetWithHighestBitrate().Size.ToString(), skipCheck: true);
 
-        videoData.WithStream(await YoutubeClient.Videos.Streams.GetAsync(StreamInfo.GetWithHighestBitrate()));
+        var highest = StreamInfo.GetWithHighestBitrate();
+
+        videoData.WithStream(await YoutubeClient.Videos.Streams.GetAsync(highest));
+        videoData.WithSize(highest.Size);
 
         return videoData; 
     }
@@ -106,13 +111,15 @@ public struct Data
     public TimeSpan? Time { get; set; }
     public Stream? Stream { get; set; }
     public string? FileExtention { get; set; }
+    public FileSize? Size { get; set; }
 
-    public Data(Stream? stream, string? name, string? description, TimeSpan? time)
+    public Data(Stream? stream = null, string? name = null, string? description = null, TimeSpan? time = null, FileSize? size = null)
     {
         Stream = stream;
         Name = name;
         Description = description;
         Time = time;
+        Size = size;
     }
     public Data() { }
 
@@ -144,6 +151,12 @@ public struct Data
     public Data WithFileExtension(string extension)
     {
         FileExtention = extension;
+        return this;
+    }
+
+    public Data WithSize(FileSize size)
+    {
+        Size = size;
         return this;
     }
 }
