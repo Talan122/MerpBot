@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using MerpBot.Services;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Bson;
 using System.Text;
@@ -117,7 +118,7 @@ public static class Helpers
     /// <param name="strings">The array of strings.</param>
     /// <param name="combineWith">What it will combine the strings with.</param>
     /// <returns></returns>
-    public static string CombineStringArray(string[] strings, string combineWith = "\n")
+    public static string CombineStringArray(IEnumerable<string> strings, string combineWith = "\n")
     {
         string result = "";
 
@@ -177,11 +178,14 @@ public class Logger
 {
     public IConfigurationRoot Config { get; set; }
     private LogSeverity GlobalSeverity { get; set; }
-    private StreamWriter StreamWriter { get; set; }  
+    private StreamWriter StreamWriter { get; set; }
+    private LoggingToDiscord Logging { get; set; }  
+    
 
-    public Logger(IConfigurationRoot config)
+    public Logger(IConfigurationRoot config, LoggingToDiscord logging)
     {
         Config = config;
+        Logging = logging;
 
         if (Enum.TryParse(Config["LogLevel"], out LogSeverity globalSeverity))
             GlobalSeverity = globalSeverity; 
@@ -205,6 +209,8 @@ public class Logger
             .Append($"{Helpers.SeverityFormat[severity]}")
             .Append($"{Helpers.SetWidth(source ?? " ", 9)} ")
             .Append(message).ToString();
+
+        Logging.AddLogMessage(builder.ToString());
 
         Task.Run(async () =>
         {

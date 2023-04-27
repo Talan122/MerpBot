@@ -43,6 +43,8 @@ public class StartUp
 
         ServiceProvider provider = services.BuildServiceProvider();
 
+        provider.GetRequiredService<LoggingToDiscord>().Start();
+
         Helpers.Logger = provider.GetRequiredService<Logger>();
 
         await provider.GetRequiredService<InteractionHandler>().InitAsync();
@@ -71,6 +73,7 @@ public class StartUp
             .AddSingleton<StartupService>()
             .AddSingleton(x => new Download(x.GetRequiredService<Logger>(), Configuration))
             .AddSingleton<HttpClient>()
+            .AddSingleton<LoggingToDiscord>()
             .AddSingleton(Configuration);
     }
 }
