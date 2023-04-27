@@ -69,36 +69,27 @@ public class Download
 
         var dataValue = doc.DocumentNode.SelectNodes("//a[@class='downloadbutton']")["a"];
 
-        string[] outerHtml = dataValue.OuterHtml.Split(" ");
-
-        string cdnLink = "";
-
-        foreach (var htmlitem in outerHtml)
-        {
-            if (!htmlitem.Contains("href=")) continue;
-            cdnLink = htmlitem.Remove(0, 6);
-            if (cdnLink.EndsWith("><i")) cdnLink = cdnLink.Remove(cdnLink.Length - 4);
-            else cdnLink = cdnLink.Remove(cdnLink.Length - 1);
-            break;
-        }
+        string cdnLink = dataValue.Attributes["href"].Value;
 
         MemoryStream outStream = new MemoryStream();
 
         await (await RedditHttpClient.GetStreamAsync(cdnLink)).CopyToAsync(outStream);
 
-        if (outStream.Length > 8000000) throw new Exception("File is larger than 8mb");
+        if (outStream.Length > MaxFileSize.Bytes) throw new Exception($"File is larger than {MaxFileSize}");
 
         if (cdnLink.StartsWith("https://sd.rapidsave.com")) return new()
         {
             FileExtention = ".mp4",
             Stream = outStream,
             Name = url.Split("/").Last(),
+            Size = new(outStream.Length),
         };
         else return new()
         {
             FileExtention = cdnLink.Remove(0, cdnLink.Length - 3),
             Name = url.Split("/").Last(),
-            Stream = outStream
+            Stream = outStream,
+            Size = new(outStream.Length)
         };
     }
 }

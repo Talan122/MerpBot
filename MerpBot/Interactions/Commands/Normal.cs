@@ -22,6 +22,7 @@ public class Normal : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("test", "Test Command")]
     public async Task Test(ulong num)
     {
+
         await RespondAsync(Factorial(num).ToString());
     }
 
@@ -107,7 +108,9 @@ public class Normal : InteractionModuleBase<SocketInteractionContext>
 
             if (Data.Size is not null) text = $"Size: {Data.Size}";
 
-            await FollowupWithFileAsync(Data.Stream ?? throw new FileNotFoundException(), $"{Data.Name ?? "dl"}.{Data.FileExtention}", text: text);
+            if ((Data.Name ?? "") == string.Empty) Data.Name = "result";
+
+            await FollowupWithFileAsync(Data.Stream ?? throw new FileNotFoundException(), $"{Data.Name}.{Data.FileExtention}", text: text);
         }
         catch (Exception e) { await HandleDownloadErrors(e); }
     }

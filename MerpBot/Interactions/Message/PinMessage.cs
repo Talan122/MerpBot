@@ -16,12 +16,10 @@ public class PinMessage : InteractionModuleBase<SocketInteractionContext>
     [MessageCommand("Pin Message")]
     public async Task PinMsg(IMessage message) // name had to be different for the class lol (im stupid and didnt think ahead)
     {
-        IGuildChannel guildChannel = (IGuildChannel)message.Channel;
-
 
         try
         {
-            IGuildChannel channel = (IGuildChannel)guildChannel;
+            IGuildChannel guildChannel = (IGuildChannel)message.Channel;
 
             string content = "";
 
@@ -43,7 +41,7 @@ public class PinMessage : InteractionModuleBase<SocketInteractionContext>
                 .WithButton(
                     label: "Jump", 
                     style: ButtonStyle.Link, 
-                    url: $"https://discord.com/channels/{channel.GuildId}/{channel.Id}/{message.Id}"
+                    url: $"https://discord.com/channels/{guildChannel.GuildId}/{guildChannel.Id}/{message.Id}"
                 );
 
             // yeah this is a one-liner, deal with it.
