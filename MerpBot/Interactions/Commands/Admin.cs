@@ -51,7 +51,7 @@ public class Admin : InteractionModuleBase<SocketInteractionContext>
     [RequireOwner]
     public async Task InviteLink()
     {
-        await RespondAsync($"https://discord.com/api/oauth2/authorize?client_id=886710931906773053&permissions=8&scope=applications.commands%20bot", ephemeral: true);
+        await RespondAsync($"https://discord.com/api/oauth2/authorize?client_id={Client.CurrentUser.Id}&permissions=8&scope=applications.commands%20bot", ephemeral: true);
     }
 
     [SlashCommand("setavatar", "Sets the bot's avatar.")]
